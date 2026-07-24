@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calcul Mental & Boulier CE1</title>
+    <!-- Importation des polices -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #eef2f6;
+            --card-bg: #f6f7fc;
+            --box-bg: #f8efe6;
+            --text-main: #1e293b;
+            --mode-auto: #10b981; 
+            --mode-train: #8b5cf6; 
+            --mode-eval: #f97316; 
+            --current-mode: var(--mode-auto);
+            
+            /* Couleurs du boulier */
+            --bead-top-inactive: #7D1E1F;    
+            --bead-top-active: #c0392b;     
+            --bead-bottom-inactive: #2c3a47;
+            --bead-bottom-active: #2557A7;  
+        }
+
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* En-tête global */
+        header {
+            background-color: #ffffff;
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-bottom: 4px solid var(--current-mode);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .main-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.4rem;
+            color: #4b5563;
+            margin: 0;
+            line-height: 1;
+            text-shadow: 1px 1px 0px rgba(255,255,255,1);
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .segmented {
+            display: inline-flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 12px;
+            gap: 4px;
+        }
+
+        button.tool-btn {
+            background: transparent;
+            color: #64748b;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button.tool-btn.active {
+            background: #ffffff;
+            color: var(--current-mode);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timer-btn { padding: 6px 8px !important; min-width: 40px; }
+
+        /* Conteneur Principal en 2 Colonnes */
+        .container { 
+            padding: 20px; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        @media(max-width: 950px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .workspace { 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Carte Calcul Mental */
+        .player-card {
+            background: var(--card-bg);
+            border: 3px dashed #cbd5e1;
+            border-radius: 24px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        body.mode-autonomie .player-card { border-color: #6ee7b7; }
+        body.mode-entrainement .player-card { border-color: #c4b5fd; }
+        body.mode-evaluation .player-card { border-color: #fdba74; }
+
+        .player-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            font-weight: 700;
+            color: #475569;
+            font-size: 1.1rem;
+            min-height: 24px; 
+        }
+
+        .timer-badge {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 1rem;
+        }
+
+        .student-select-container { display: none; }
+        body.mode-evaluation .student-select-container { display: block; }
+        
+        select.student-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #cbd5e1;
+            font-size: 1rem;
+            font-weight: 700;
+            outline: none;
+            background: white;
+        }
+
+        .btn-choose-prog {
+            background: var(--current-mode);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .prog-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .prog-btn {
+            background: #f1f5f9;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 8px;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: left;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .prog-btn:hover { background: var(--current-mode); color: white; }
+        
+        .prog-btn b { color: var(--current-mode); }
+        .prog-btn:hover b { color: white; }
+
+        .exercise-display {
+            background: var(--box-bg);
+            border-radius: 12px;
+            font-size: 1.8rem;
+            text-align: center;
+            font-weight: 900;
+            padding: 10px;
+            color: #0f172a;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            letter-spacing: -1px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .help-container {
+            text-align: center;
+            min-height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2px 0;
+        }
+
+        .help-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 4px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #475569;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+        }
+        .help-btn:hover { background: #e2e8f0; }
+
+        body.mode-evaluation .help-btn { display: none !important; }
+
+        .strategy-box {
+            font-size: 0.85rem;
+            color: #0f172a;
+            font-weight: 700;
+            background: #fef08a;
+            border: 1px solid #fde047;
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        input.answer-input {
+            width: 100%;
+            padding: 8px;
+            font-size: 1.8rem;
+            text-align: center;
+            border: 3px solid #cbd5e1;
+            border-radius: 12px;
+            font-weight: 900;
+            color: var(--current-mode);
+            background: #ffffff;
+            margin-bottom: 5px;
+        }
+        input.answer-input:focus { outline: none; }
+        input.answer-input:disabled { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px; 
+        }
+
+        .num-btn {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #1e293b;
+            padding: 8px 0;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #e2e8f0;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .num-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #e2e8f0;
+        }
+
+        .btn-del { color: #ef4444; font-size: 1.1rem; }
+        .btn-val { background: #10b981; color: white; border-color: #059669; box-shadow: 0 4px 0 #059669; font-size: 1.2rem;}
+        .btn-val:active { box-shadow: 0 0 0 #059669; }
+
+        .feedback-area {
+            min-height: 40px; 
+            padding: 8px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .feedback-area.correct { background: #d1fae5; color: #065f46; border: 2px solid #34d399; }
+        .feedback-area.incorrect { background: #fee2e2; color: #991b1b; border: 2px solid #f87171; }
+        
+        .progress-indicator { text-align: center; font-weight: 700; color: #64748b; display: none; margin-bottom: 5px; }
+        body.mode-evaluation .progress-indicator, body.mode-entrainement .progress-indicator { display: block; }
+        
+        .exercise-container { display: none; }
+
+
+        /* Colonne Droite : Le Boulier Interactif à 4 Colonnes */
+        .abacus-card {
+            background: var(--card-bg);
+            border: 3px dashed #cbd5e1;
+            border-radius: 24px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .abacus-header {
+            font-weight: 700;
+            color: #475569;
+            font-size: 1.1rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .abacus-header svg {
+            width: 22px;
+            height: 22px;
+            fill: #475569;
+        }
+
+        .abacus-frame {
+            background-color: #fff;
+            border: 10px solid var(--current-mode); 
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 380px;
+            height: 380px;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            padding: 0 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        .beam {
+            position: absolute;
+            top: 110px;
+            left: 0;
+            right: 0;
+            height: 18px;
+            background-color: #2c3e50;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .beam-btn {
+            color: white;
+            border: none;
+            height: 18px;
+            width: 35px;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        #reset-abacus-btn {
+            background-color: #c0392b;
+            border-top-left-radius: 2px;
+            border-bottom-left-radius: 2px;
+        }
+
+        .column {
+            position: relative;
+            width: 65px;
+            height: 100%;
+        }
+
+        .rod {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 29px;
+            width: 6px;
+            background: linear-gradient(90deg, #bbb, #eee, #bbb);
+            z-index: 1;
+        }
+
+        .bead {
+            width: 55px;
+            height: 26px;
+            border-radius: 15px / 10px;
+            position: absolute;
+            left: 5px;
+            z-index: 5;
+            transition: top 0.15s ease, background-color 0.15s ease;
+            box-shadow: 0 3px 3px rgba(0,0,0,0.25), inset 0 2px 4px rgba(255,255,255,0.3);
+            cursor: pointer;
+        }
+
+        .bead.top { background-color: var(--bead-top-inactive); }
+        .bead.top.active { background-color: var(--bead-top-active); }
+
+        .bead.bottom { background-color: var(--bead-bottom-inactive); }
+        .bead.bottom.active { background-color: var(--bead-bottom-active); }
+
+        .abacus-labels {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .abacus-label-item {
+            width: 65px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .abacus-display {
+            background-color: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 6px 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        /* Harmonisation sur ordinateur uniquement */
+        @media(min-width: 951px) {
+            .container {
+                align-items: stretch;
+            }
+            .player-card, .abacus-card {
+                height: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body class="mode-autonomie">
+
+    <header>
+        <h1 class="main-title">Calcul Mental & Boulier - CE1</h1>
+        
+        <div class="controls-group">
+            <div class="segmented">
+                <button class="tool-btn mode-btn active" onclick="setMode('autonomie', 'mode-autonomie', '#10b981')">Autonomie</button>
+                <button class="tool-btn mode-btn" onclick="setMode('entrainement', 'mode-entrainement', '#8b5cf6')">Entraînement</button>
+                <button class="tool-btn mode-btn" onclick="setMode('evaluation', 'mode-evaluation', '#f97316')">Évaluation</button>
+            </div>
+            
+            <div class="segmented" id="timer-config-container">
+                <button class="tool-btn timer-btn active" data-val="0" onclick="setTimer(0, this)" title="Infini">∞</button>
+                <button class="tool-btn timer-btn" data-val="120" onclick="setTimer(120, this)">120s</button>
+                <button class="tool-btn timer-btn" data-val="60" onclick="setTimer(60, this)">60s</button>
+                <button class="tool-btn timer-btn" data-val="30" onclick="setTimer(30, this)">30s</button>
+                <button class="tool-btn timer-btn" data-val="15" onclick="setTimer(15, this)">15s</button>
+                <button class="tool-btn timer-btn" data-val="10" onclick="setTimer(10, this)">10s</button>
+                <button class="tool-btn timer-btn" data-val="5" onclick="setTimer(5, this)">5s</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- COLONNE GAUCHE : Application de Calcul Mental -->
+        <div class="workspace" id="app-workspace"></div>
+
+        <!-- COLONNE DROITE : Le Boulier Actif à 4 colonnes (M, C, D, U) -->
+        <div class="abacus-card">
+            <div class="abacus-header">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7zm-8 4h10v2H7v-2z"/>
+                </svg>
+                Boulier de manipulation
+            </div>
+            
+            <div class="abacus-frame" id="abacus-main-frame">
+                <div class="beam">
+                    <button class="beam-btn" id="reset-abacus-btn" onclick="resetAbacusOnly()" title="Remettre à zéro">✕</button>
+                    <div style="flex:1;"></div>
+                </div>
+                
+                <!-- Milliers (M) -->
+                <div class="column" id="col-3">
+                    <div class="rod"></div>
+                    <div class="bead top" data-idx="0" style="top: 5px;" onclick="clickTopBead('col-3', 0)"></div>
+                    <div class="bead top" data-idx="1" style="top: 35px;" onclick="clickTopBead('col-3', 1)"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 0)" style="top: 175px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 1)" style="top: 205px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 2)" style="top: 235px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 3)" style="top: 265px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 4)" style="top: 295px;"></div>
+                </div>
+
+                <!-- Centaines (C) -->
+                <div class="column" id="col-2">
+                    <div class="rod"></div>
+                    <div class="bead top" data-idx="0" style="top: 5px;" onclick="clickTopBead('col-2', 0)"></div>
+                    <div class="bead top" data-idx="1" style="top: 35px;" onclick="clickTopBead('col-2', 1)"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 0)" style="top: 175px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 1)" style="top: 205px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 2)" style="top: 235px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 3)" style="top: 265px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 4)" style="top: 295px;"></div>
+                </div>
+
+                <!-- Dizaines (D) -->
+                <div class="column" id="col-1">
+                    <div class="rod"></div>
+                    <div class="bead top" data-idx="0" style="top: 5px;" onclick="clickTopBead('col-1', 0)"></div>
+                    <div class="bead top" data-idx="1" style="top: 35px;" onclick="clickTopBead('col-1', 1)"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 0)" style="top: 175px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 1)" style="top: 205px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 2)" style="top: 235px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 3)" style="top: 265px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 4)" style="top: 295px;"></div>
+                </div>
+
+                <!-- Unités (U) -->
+                <div class="column" id="col-0">
+                    <div class="rod"></div>
+                    <div class="bead top" data-idx="0" style="top: 5px;" onclick="clickTopBead('col-0', 0)"></div>
+                    <div class="bead top" data-idx="1" style="top: 35px;" onclick="clickTopBead('col-0', 1)"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 0)" style="top: 175px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 1)" style="top: 205px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 2)" style="top: 235px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 3)" style="top: 265px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 4)" style="top: 295px;"></div>
+                </div>
+            </div>
+
+            <div class="abacus-labels">
+                <div class="abacus-label-item" style="color: #3498db;">M</div>
+                <div class="abacus-label-item" style="color: #e67e22;">C</div>
+                <div class="abacus-label-item" style="color: #2ecc71;">D</div>
+                <div class="abacus-label-item" style="color: #e74c3c;">U</div>
+            </div>
+
+            <div class="abacus-display" id="abacus-total-display">Valeur : 0</div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIQUE DU BOULIER (4 COLONNES) ---
+        const POS_TOP_DOWN = [85, 52];  
+        const POS_TOP_UP = [5, 35];      
+        const POS_BOTTOM_UP = [135, 165, 195, 225, 255];    
+        const POS_BOTTOM_DOWN = [175, 205, 235, 265, 295];  
+
+        const abacusColumns = [
+            { id: "col-0", multiplier: 1, top0: false, top1: false, bottomCount: 0 },
+            { id: "col-1", multiplier: 10, top0: false, top1: false, bottomCount: 0 },
+            { id: "col-2", multiplier: 100, top0: false, top1: false, bottomCount: 0 },
+            { id: "col-3", multiplier: 1000, top0: false, top1: false, bottomCount: 0 }
+        ];
+
+        function clickTopBead(colId, idx) {
+            const colState = abacusColumns.find(c => c.id === colId);
+            if (!colState) return;
+
+            if (idx === 0) {
+                if (!colState.top0) { colState.top0 = true; colState.top1 = true; }
+                else { colState.top0 = false; colState.top1 = false; }
+            } else {
+                if (colState.top1) { colState.top1 = false; colState.top0 = false; }
+                else { colState.top1 = true; }
+            }
+            refreshAbacusVisuals(document.getElementById(colId), colState);
+            updateAbacusTotalDisplay();
+        }
+
+        function clickBottomBead(colId, index) {
+            const colState = abacusColumns.find(c => c.id === colId);
+            if (!colState) return;
+
+            if (index >= colState.bottomCount) { colState.bottomCount = index + 1; }
+            else { colState.bottomCount = index; }
+
+            refreshAbacusVisuals(document.getElementById(colId), colState);
+            updateAbacusTotalDisplay();
+        }
+
+        function refreshAbacusVisuals(colEl, state) {
+            if (!colEl) return;
+            const topBeads = Array.from(colEl.querySelectorAll('.bead.top'));
+            const bottomBeads = Array.from(colEl.querySelectorAll('.bead.bottom'));
+
+            topBeads[0].style.top = (state.top0 ? POS_TOP_DOWN[1] : POS_TOP_UP[0]) + 'px';
+            if (state.top0) topBeads[0].classList.add('active'); else topBeads[0].classList.remove('active');
+
+            topBeads[1].style.top = (state.top1 ? POS_TOP_DOWN[0] : POS_TOP_UP[1]) + 'px';
+            if (state.top1) topBeads[1].classList.add('active'); else topBeads[1].classList.remove('active');
+
+            bottomBeads.forEach((bead, index) => {
+                const isActive = index < state.bottomCount;
+                bead.style.top = (isActive ? POS_BOTTOM_UP[index] : POS_BOTTOM_DOWN[index]) + 'px';
+                if (isActive) bead.classList.add('active'); else bead.classList.remove('active');
+            });
+        }
+
+        function getAbacusTotal() {
+            let total = 0;
+            abacusColumns.forEach(col => {
+                let countHigh = (col.top0 ? 1 : 0) + (col.top1 ? 1 : 0);
+                total += ((countHigh * 5) + col.bottomCount) * col.multiplier;
+            });
+            return total;
+        }
+
+        function updateAbacusTotalDisplay() {
+            const disp = document.getElementById('abacus-total-display');
+            if (disp) disp.innerText = `Valeur : ${getAbacusTotal()}`;
+        }
+
+        function resetAbacusOnly() {
+            abacusColumns.forEach(col => {
+                col.top0 = false;
+                col.top1 = false;
+                col.bottomCount = 0;
+                refreshAbacusVisuals(document.getElementById(col.id), col);
+            });
+            updateAbacusTotalDisplay();
+        }
+
+        function injectValueToAbacus(val) {
+            resetAbacusOnly();
+            let temp = val;
+            abacusColumns.slice().reverse().forEach((col) => {
+                let digit = Math.floor(temp / col.multiplier);
+                temp %= col.multiplier;
+                if (digit > 9) digit = 9; 
+                if (digit >= 5) {
+                    col.top1 = true; 
+                    col.bottomCount = digit - 5;
+                } else {
+                    col.top1 = false;
+                    col.bottomCount = digit;
+                }
+                refreshAbacusVisuals(document.getElementById(col.id), col);
+            });
+            updateAbacusTotalDisplay();
+        }
+
+
+        // --- LOGIQUE CALCUL MENTAL CE1 ---
+        const studentsList = [
+            "Élève 1", "Élève 2", "Élève 3", "Élève 4", "Élève 5", "Élève 6",
+            "Élève 7", "Élève 8", "Élève 9", "Élève 10", "Élève 11", "Élève 12",
+            "Élève 13", "Élève 14", "Élève 15", "Élève 16", "Élève 17", "Élève 18",
+            "Élève 19", "Élève 20", "Élève 21", "Élève 22", "Élève 23", "Élève 24",
+            "Élève 25", "Élève 26", "Élève 27", "Élève 28", "Élève 29", "Élève 30"
+        ];
+
+        const progressionData = {
+            "P0": { t: "Dictée muette (Lire)", type: "read_abacus", gen: () => { let n=Math.floor(Math.random()*8900)+100; return { q: "Écris le nombre affiché :", r: n, s: "Observe les billes et tape le nombre."}; }},
+            "P1": { t: "Inscrire un nombre (Agir)", type: "write_abacus", gen: () => { let n=Math.floor(Math.random()*8900)+100; return { q: `Affiche ${n} sur le boulier`, r: n, s: "Place les billes et clique sur ✔."}; }},
+            "0": { t: "+/- 10, 100, 1000", type: "normal", gen: () => { let n=Math.floor(Math.random()*8000)+1000; let pas=[10, 100, 1000][Math.floor(Math.random()*3)]; let op=Math.random()>0.5?'+':'-'; return { q: `${n} ${op} ${pas} =`, r: op==='+'?n+pas:n-pas, s: "Modifie uniquement le chiffre concerné."}; }},
+            "10": { t: "+ se terminant par 8 ou 9", type: "normal", gen: () => { let a=Math.floor(Math.random()*80)+10; let b=(Math.floor(Math.random()*4)+1)*10 + (Math.random()>0.5?8:9); return { q: `${a} + ${b} =`, r: a+b, s: `Ajoute la dizaine sup. puis retire ${10-(b%10)}.`}; }},
+            "20": { t: "- se terminant par 8 ou 9", type: "normal", gen: () => { let a=Math.floor(Math.random()*80)+50; let b=(Math.floor(Math.random()*3)+1)*10 + (Math.random()>0.5?8:9); return { q: `${a} - ${b} =`, r: a-b, s: `Retire la dizaine sup. puis ajoute ${10-(b%10)}.`}; }},
+            "30": { t: "Compléments", type: "normal", gen: () => { let target=[100, 1000][Math.floor(Math.random()*2)]; let n=Math.floor(Math.random()*(target-10))+10; return { q: `${n} + ... = ${target}`, r: target-n, s: `Complète à la dizaine puis à la centaine/millier.`}; }},
+            "40": { t: "Tables de 6 à 9", type: "normal", gen: () => { let a=Math.floor(Math.random()*4)+6; let b=Math.floor(Math.random()*9)+2; return { q: `${a} × ${b} =`, r: a*b, s: "Sers-toi de tes tables de multiplication."}; }},
+            "50": { t: "Doubles et moitiés", type: "normal", gen: () => { let isDouble=Math.random()>0.5; if(isDouble) { let n=Math.floor(Math.random()*50)+10; return { q: `Double de ${n}`, r: n*2, s: `C'est ${n} + ${n}.`}; } else { let n=(Math.floor(Math.random()*40)+10)*2; return { q: `Moitié de ${n}`, r: n/2, s: `Partage en deux parts égales.`}; } }},
+            "60": { t: "× 10, 100, 1000", type: "normal", gen: () => { let n=Math.floor(Math.random()*50)+2; let m=[10, 100, 1000][Math.floor(Math.random()*3)]; return { q: `${n} × ${m} =`, r: n*m, s: "Ajoute simplement les zéros nécessaires."}; }},
+            "70": { t: "× finissant par 0", type: "normal", gen: () => { let n=Math.floor(Math.random()*8)+2; let m=(Math.floor(Math.random()*5)+2)*10; return { q: `${n} × ${m} =`, r: n*m, s: `Multiplie par ${m/10} puis ajoute un zéro.`}; }},
+            "80": { t: "Produit en décomposant", type: "normal", gen: () => { let a=Math.floor(Math.random()*5)+2; let du=(Math.floor(Math.random()*4)+1)*10; let u=Math.floor(Math.random()*8)+2; let b=du+u; return { q: `${a} × ${b} =`, r: a*b, s: `Calcule d'abord (${a} × ${du}) puis ajoute (${a} × ${u}).`}; }}
+        };
+
+        let currentMode = 'mode-autonomie';
+        let players = [];
+        let timerConfig = 0;
+
+        function setMode(mode, className, color) {
+            document.body.className = className;
+            currentMode = className;
+            document.documentElement.style.setProperty('--current-mode', color);
+            
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (className === 'mode-autonomie') {
+                const infiniteBtn = document.querySelector('.timer-btn[data-val="0"]');
+                if(infiniteBtn) setTimer(0, infiniteBtn);
+            } else {
+                const activeBtn = document.querySelector('.timer-btn.active');
+                timerConfig = activeBtn ? parseInt(activeBtn.dataset.val) : 0;
+            }
+            players.forEach(p => stopSession(p.id));
+        }
+
+        function setTimer(val, btnElem) {
+            timerConfig = val;
+            document.querySelectorAll('.timer-btn').forEach(btn => btn.classList.remove('active'));
+            if(btnElem) btnElem.classList.add('active');
+            players.forEach(p => {
+                if(p.currentProg) startQuestion(p.id);
+            }); 
+        }
+
+        function buildWorkspace() {
+            const ws = document.getElementById('app-workspace');
+            ws.innerHTML = '';
+            players = [];
+
+            let studentOptions = '<option value="">Qui es-tu ?</option>';
+            studentsList.forEach(s => studentOptions += `<option value="${s}">${s}</option>`);
+
+            players.push({ id: 1, timer: null, currentQ: null, currentProg: null, score: 0, qCount: 0, evalFinished: false });
+            
+            let gridHTML = '';
+            for(let key in progressionData) {
+                gridHTML += `<button class="prog-btn" onclick="selectProgression(1, '${key}')" title="${progressionData[key].t}"><b>${key}</b> - ${progressionData[key].t}</button>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            card.innerHTML = `
+                <div class="player-header">
+                    <span id="timer-badge-1" class="timer-badge" style="display:none;"></span>
+                </div>
+                
+                <div class="student-select-container">
+                    <select id="student-1" class="student-select" onchange="resetIfEval(1)">
+                        ${studentOptions}
+                    </select>
+                </div>
+
+                <button id="btn-choose-1" class="btn-choose-prog" onclick="toggleProgGrid(1)">Choisir une notion CE1</button>
+                
+                <div id="prog-grid-1" class="prog-grid">${gridHTML}</div>
+
+                <div id="exercise-container-1" class="exercise-container">
+                    <div id="progress-1" class="progress-indicator">Bonnes réponses : 0</div>
+                    
+                    <div id="display-1" class="exercise-display">...</div>
+                    
+                    <div class="help-container">
+                        <button id="btn-help-1" class="help-btn" onclick="showHelp(1)">💡 Indice</button>
+                        <div id="help-box-1" class="strategy-box"></div>
+                    </div>
+                    
+                    <input type="text" id="input-1" class="answer-input" readonly placeholder="?">
+                    
+                    <div class="numpad" id="numpad-1">
+                        <button class="num-btn" onclick="typeNum(1, 1)">1</button>
+                        <button class="num-btn" onclick="typeNum(1, 2)">2</button>
+                        <button class="num-btn" onclick="typeNum(1, 3)">3</button>
+                        <button class="num-btn" onclick="typeNum(1, 4)">4</button>
+                        <button class="num-btn" onclick="typeNum(1, 5)">5</button>
+                        <button class="num-btn" onclick="typeNum(1, 6)">6</button>
+                        <button class="num-btn" onclick="typeNum(1, 7)">7</button>
+                        <button class="num-btn" onclick="typeNum(1, 8)">8</button>
+                        <button class="num-btn" onclick="typeNum(1, 9)">9</button>
+                        <button class="num-btn btn-del" onclick="delNum(1)">✖</button>
+                        <button class="num-btn" onclick="typeNum(1, 0)">0</button>
+                        <button class="num-btn btn-val" id="btn-val-1" onclick="validate(1)">✔</button>
+                    </div>
+                </div>
+                
+                <div id="feedback-1" class="feedback-area"></div>
+            `;
+            ws.appendChild(card);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if(players.length > 0 && players[0].currentProg && !players[0].evalFinished) {
+                // Ignore keyboard typing if the mode requires manipulating the abacus
+                if (players[0].currentQ.type === "write_abacus" && (event.key >= '0' && event.key <= '9')) return;
+
+                if(event.key >= '0' && event.key <= '9') {
+                    typeNum(1, parseInt(event.key));
+                } else if(event.key === 'Backspace') {
+                    delNum(1);
+                } else if(event.key === 'Enter') {
+                    validate(1);
+                }
+            }
+        });
+
+        function showHelp(id) {
+            document.getElementById(`help-box-${id}`).style.display = 'inline-block';
+            document.getElementById(`btn-help-${id}`).style.display = 'none';
+        }
+
+        function typeNum(id, num) {
+            const input = document.getElementById(`input-${id}`);
+            if(input.value.length < 5 && !input.disabled) input.value += num;
+        }
+        function delNum(id) {
+            const input = document.getElementById(`input-${id}`);
+            if(!input.disabled) input.value = input.value.slice(0, -1);
+        }
+
+        function toggleProgGrid(id) {
+            const grid = document.getElementById(`prog-grid-${id}`);
+            grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
+        }
+
+        function selectProgression(id, key) {
+            const p = players.find(x => x.id === id);
+            p.currentProg = key;
+            
+            document.getElementById(`prog-grid-${id}`).style.display = 'none';
+            document.getElementById(`btn-choose-${id}`).innerText = `Notion : ${key} - ${progressionData[key].t}`;
+            document.getElementById(`exercise-container-${id}`).style.display = 'block';
+            
+            resetSession(id);
+        }
+
+        function resetIfEval(id) {
+            if(currentMode === 'mode-evaluation') resetSession(id);
+        }
+
+        function stopSession(id) {
+            const p = players.find(x => x.id === id);
+            clearInterval(p.timer);
+            document.getElementById(`exercise-container-${id}`).style.display = 'none';
+            document.getElementById(`prog-grid-${id}`).style.display = 'grid';
+            document.getElementById(`btn-choose-${id}`).innerText = "Choisir une notion CE1";
+            document.getElementById(`feedback-${id}`).innerHTML = "";
+            p.currentProg = null;
+        }
+
+        function resetSession(id) {
+            const p = players.find(x => x.id === id);
+            p.score = 0; p.qCount = 0; p.evalFinished = false;
+            document.getElementById(`btn-val-${id}`).disabled = false;
+            
+            if (currentMode === 'mode-evaluation') {
+                document.getElementById(`progress-${id}`).innerText = `Question ${p.qCount + 1} / 10`;
+            } else if (currentMode === 'mode-entrainement') {
+                document.getElementById(`progress-${id}`).innerText = `Bonnes réponses : ${p.score}`;
+            }
+
+            startQuestion(id);
+        }
+
+        function startQuestion(id) {
+            const p = players.find(x => x.id === id);
+            if(!p.currentProg || p.evalFinished) return;
+            
+            p.currentQ = progressionData[p.currentProg].gen();
+            p.currentQ.type = progressionData[p.currentProg].type;
+
+            const inputField = document.getElementById(`input-${id}`);
+            const abacusTotal = document.getElementById('abacus-total-display');
+
+            document.getElementById(`display-${id}`).innerText = p.currentQ.q;
+            document.getElementById(`feedback-${id}`).className = 'feedback-area';
+            document.getElementById(`feedback-${id}`).innerHTML = '';
+
+            document.getElementById(`btn-help-${id}`).style.display = 'inline-flex';
+            document.getElementById(`help-box-${id}`).style.display = 'none';
+            document.getElementById(`help-box-${id}`).innerHTML = `💡 ${p.currentQ.s}`;
+
+            // Logique Spécifique pour la Dictée Muette (P0) et Inscription (P1)
+            if (p.currentQ.type === "read_abacus") {
+                inputField.disabled = false;
+                inputField.value = '';
+                inputField.placeholder = '?';
+                abacusTotal.style.visibility = 'hidden'; // On cache la valeur pour obliger l'élève à lire le boulier
+                injectValueToAbacus(p.currentQ.r); 
+            } else if (p.currentQ.type === "write_abacus") {
+                inputField.disabled = true;
+                inputField.value = 'Affiche sur le boulier !';
+                abacusTotal.style.visibility = 'hidden'; // On cache la triche
+                resetAbacusOnly();
+            } else {
+                inputField.disabled = false;
+                inputField.value = '';
+                inputField.placeholder = '?';
+                abacusTotal.style.visibility = 'visible';
+                resetAbacusOnly();
+            }
+            
+            runTimer(id);
+        }
+
+        function runTimer(id) {
+            const p = players.find(x => x.id === id);
+            clearInterval(p.timer);
+            
+            const badge = document.getElementById(`timer-badge-${id}`);
+            if(timerConfig === 0) {
+                badge.style.display = 'none';
+                return;
+            }
+            
+            badge.style.display = 'block';
+            let timeLeft = timerConfig;
+            badge.innerText = `${timeLeft}s`;
+            
+            p.timer = setInterval(() => {
+                timeLeft--;
+                badge.innerText = `${timeLeft}s`;
+                if(timeLeft <= 0) {
+                    clearInterval(p.timer);
+                    processAnswer(id, null);
+                }
+            }, 1000);
+        }
+
+        function validate(id) {
+            const p = players.find(x => x.id === id);
+            let userVal;
+
+            if (p.currentQ.type === "write_abacus") {
+                userVal = getAbacusTotal(); // Validation directement depuis le boulier !
+            } else {
+                const input = document.getElementById(`input-${id}`);
+                if(input.value === '' || input.disabled) return;
+                userVal = parseInt(input.value);
+            }
+            
+            processAnswer(id, userVal);
+        }
+
+        function processAnswer(id, userVal) {
+            const p = players.find(x => x.id === id);
+            if(!p.currentQ || p.evalFinished) return;
+            
+            clearInterval(p.timer);
+            const feedback = document.getElementById(`feedback-${id}`);
+            const display = document.getElementById(`display-${id}`);
+            const abacusTotal = document.getElementById('abacus-total-display');
+
+            document.getElementById(`btn-help-${id}`).style.display = 'none';
+            document.getElementById(`help-box-${id}`).style.display = 'none';
+
+            let fullCorrection = p.currentQ.q;
+            
+            // Correction Visuelle spécifique
+            if (p.currentQ.type === "write_abacus") {
+                fullCorrection = `Il fallait afficher <br> <span style="color: #2563eb;">${p.currentQ.r}</span>`;
+                injectValueToAbacus(p.currentQ.r); // Affiche la correction sur le boulier
+                abacusTotal.style.visibility = 'visible';
+            } else if (p.currentQ.type === "read_abacus") {
+                fullCorrection += `<br> <span style="color: #2563eb;">${p.currentQ.r}</span>`;
+                abacusTotal.style.visibility = 'visible';
+            } else {
+                if (fullCorrection.includes('...')) {
+                    fullCorrection = fullCorrection.replace('...', `<span style="color: #2563eb;">${p.currentQ.r}</span>`);
+                } else if (fullCorrection.endsWith('=')) {
+                    fullCorrection += ` <span style="color: #2563eb;">${p.currentQ.r}</span>`;
+                } else {
+                    fullCorrection += ` ➔ <span style="color: #2563eb;">${p.currentQ.r}</span>`;
+                }
+            }
+
+            display.innerHTML = `<div style="line-height: 1;">${fullCorrection}</div>`;
+
+            if(userVal === p.currentQ.r) {
+                p.score++;
+                feedback.className = 'feedback-area correct';
+                feedback.innerHTML = `✅ Exact !`;
+            } else {
+                feedback.className = 'feedback-area incorrect';
+                if (userVal === null) {
+                    feedback.innerHTML = `❌ Temps écoulé ! Regarde la correction.`;
+                } else {
+                    feedback.innerHTML = `❌ Faux ! Regarde la correction.`;
+                }
+            }
+
+            if (currentMode === 'mode-evaluation') {
+                p.qCount++;
+                document.getElementById(`progress-${id}`).innerText = `Question ${p.qCount} / 10`;
+            } else if (currentMode === 'mode-entrainement') {
+                document.getElementById(`progress-${id}`).innerText = `Bonnes réponses : ${p.score}`;
+            }
+
+            let delayToNext = 3000;
+
+            if(currentMode === 'mode-evaluation') {
+                delayToNext = 5000; 
+                
+                if(p.qCount >= 10) {
+                    p.evalFinished = true;
+                    document.getElementById(`btn-val-${id}`).disabled = true;
+                    setTimeout(() => endEvaluation(id), delayToNext);
+                    return;
+                }
+            }
+            
+            setTimeout(() => startQuestion(id), delayToNext); 
+        }
+
+        function endEvaluation(id) {
+            const p = players.find(x => x.id === id);
+            const student = document.getElementById(`student-${id}`).value;
+            const feedback = document.getElementById(`feedback-${id}`);
+            
+            document.getElementById(`display-${id}`).innerText = "FINI";
+            document.getElementById(`input-${id}`).value = "";
+
+            if (!student) {
+                feedback.innerHTML = `<strong>Évaluation terminée !</strong><br>Score : ${p.score} / 10<br><small style="color: #ea580c;">⚠️ Prénom non renseigné.</small>`;
+            } else {
+                feedback.innerHTML = `<strong>${student}, c'est terminé !</strong><br>Score final : ${p.score} / 10`;
+            }
+            feedback.className = 'feedback-area correct';
+            
+            setTimeout(() => {
+                stopSession(id);
+            }, 4000);
+        }
+
+        window.onload = () => {
+            buildWorkspace();
+            resetAbacusOnly();
+        };
+    </script>
+</body>
+</html>
