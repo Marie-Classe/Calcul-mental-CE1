@@ -98,7 +98,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .timer-btn { padding: 6px 8px !important; min-width: 40px; }
+        .timer-btn, .range-btn { padding: 6px 8px !important; min-width: 40px; }
 
         /* Conteneur Principal en 2 Colonnes */
         .container { 
@@ -331,7 +331,6 @@
         
         .exercise-container { display: none; }
 
-
         /* Colonne Droite : Le Boulier Interactif à 4 Colonnes */
         .abacus-card {
             background: var(--card-bg);
@@ -469,11 +468,9 @@
             text-align: center;
         }
 
-        /* Harmonisation sur ordinateur uniquement */
+        /* Harmonisation sur ordinateur */
         @media(min-width: 951px) {
-            .container {
-                align-items: stretch;
-            }
+            .container { align-items: stretch; }
             .player-card, .abacus-card {
                 height: 100%;
                 justify-content: space-between;
@@ -491,6 +488,12 @@
                 <button class="tool-btn mode-btn active" onclick="setMode('autonomie', 'mode-autonomie', '#10b981')">Autonomie</button>
                 <button class="tool-btn mode-btn" onclick="setMode('entrainement', 'mode-entrainement', '#8b5cf6')">Entraînement</button>
                 <button class="tool-btn mode-btn" onclick="setMode('evaluation', 'mode-evaluation', '#f97316')">Évaluation</button>
+            </div>
+            
+            <div class="segmented" id="range-config-container">
+                <button class="tool-btn range-btn" data-val="100" onclick="setRange(100, this)">&lt; 100</button>
+                <button class="tool-btn range-btn active" data-val="1000" onclick="setRange(1000, this)">&lt; 1000</button>
+                <button class="tool-btn range-btn" data-val="10000" onclick="setRange(10000, this)">&lt; 10000</button>
             </div>
             
             <div class="segmented" id="timer-config-container">
@@ -686,7 +689,7 @@
         }
 
 
-        // --- LOGIQUE CALCUL MENTAL CE1 ---
+        // --- LOGIQUE CALCUL MENTAL CE1 DYNAMIQUE ---
         const studentsList = [
             "Élève 1", "Élève 2", "Élève 3", "Élève 4", "Élève 5", "Élève 6",
             "Élève 7", "Élève 8", "Élève 9", "Élève 10", "Élève 11", "Élève 12",
@@ -695,18 +698,96 @@
             "Élève 25", "Élève 26", "Élève 27", "Élève 28", "Élève 29", "Élève 30"
         ];
 
+        let maxNumberLevel = 1000; // Par défaut <1000
+
         const progressionData = {
-            "P0": { t: "Dictée muette (Lire)", type: "read_abacus", gen: () => { let n=Math.floor(Math.random()*8900)+100; return { q: "Écris le nombre affiché :", r: n, s: "Observe les billes et tape le nombre."}; }},
-            "P1": { t: "Inscrire un nombre (Agir)", type: "write_abacus", gen: () => { let n=Math.floor(Math.random()*8900)+100; return { q: `Affiche ${n} sur le boulier`, r: n, s: "Place les billes et clique sur ✔."}; }},
-            "0": { t: "+/- 10, 100, 1000", type: "normal", gen: () => { let n=Math.floor(Math.random()*8000)+1000; let pas=[10, 100, 1000][Math.floor(Math.random()*3)]; let op=Math.random()>0.5?'+':'-'; return { q: `${n} ${op} ${pas} =`, r: op==='+'?n+pas:n-pas, s: "Modifie uniquement le chiffre concerné."}; }},
-            "10": { t: "+ se terminant par 8 ou 9", type: "normal", gen: () => { let a=Math.floor(Math.random()*80)+10; let b=(Math.floor(Math.random()*4)+1)*10 + (Math.random()>0.5?8:9); return { q: `${a} + ${b} =`, r: a+b, s: `Ajoute la dizaine sup. puis retire ${10-(b%10)}.`}; }},
-            "20": { t: "- se terminant par 8 ou 9", type: "normal", gen: () => { let a=Math.floor(Math.random()*80)+50; let b=(Math.floor(Math.random()*3)+1)*10 + (Math.random()>0.5?8:9); return { q: `${a} - ${b} =`, r: a-b, s: `Retire la dizaine sup. puis ajoute ${10-(b%10)}.`}; }},
-            "30": { t: "Compléments", type: "normal", gen: () => { let target=[100, 1000][Math.floor(Math.random()*2)]; let n=Math.floor(Math.random()*(target-10))+10; return { q: `${n} + ... = ${target}`, r: target-n, s: `Complète à la dizaine puis à la centaine/millier.`}; }},
-            "40": { t: "Tables de 6 à 9", type: "normal", gen: () => { let a=Math.floor(Math.random()*4)+6; let b=Math.floor(Math.random()*9)+2; return { q: `${a} × ${b} =`, r: a*b, s: "Sers-toi de tes tables de multiplication."}; }},
-            "50": { t: "Doubles et moitiés", type: "normal", gen: () => { let isDouble=Math.random()>0.5; if(isDouble) { let n=Math.floor(Math.random()*50)+10; return { q: `Double de ${n}`, r: n*2, s: `C'est ${n} + ${n}.`}; } else { let n=(Math.floor(Math.random()*40)+10)*2; return { q: `Moitié de ${n}`, r: n/2, s: `Partage en deux parts égales.`}; } }},
-            "60": { t: "× 10, 100, 1000", type: "normal", gen: () => { let n=Math.floor(Math.random()*50)+2; let m=[10, 100, 1000][Math.floor(Math.random()*3)]; return { q: `${n} × ${m} =`, r: n*m, s: "Ajoute simplement les zéros nécessaires."}; }},
-            "70": { t: "× finissant par 0", type: "normal", gen: () => { let n=Math.floor(Math.random()*8)+2; let m=(Math.floor(Math.random()*5)+2)*10; return { q: `${n} × ${m} =`, r: n*m, s: `Multiplie par ${m/10} puis ajoute un zéro.`}; }},
-            "80": { t: "Produit en décomposant", type: "normal", gen: () => { let a=Math.floor(Math.random()*5)+2; let du=(Math.floor(Math.random()*4)+1)*10; let u=Math.floor(Math.random()*8)+2; let b=du+u; return { q: `${a} × ${b} =`, r: a*b, s: `Calcule d'abord (${a} × ${du}) puis ajoute (${a} × ${u}).`}; }}
+            "P0": { t: "Dictée muette (Lire)", type: "read_abacus", gen: () => { 
+                let min = maxNumberLevel === 100 ? 10 : (maxNumberLevel === 1000 ? 100 : 1000);
+                let n = Math.floor(Math.random() * (maxNumberLevel - min)) + min; 
+                return { q: "Écris le nombre affiché :", r: n, s: "Observe les billes et tape le nombre."}; 
+            }},
+            "P1": { t: "Inscrire un nombre (Agir)", type: "write_abacus", gen: () => { 
+                let min = maxNumberLevel === 100 ? 10 : (maxNumberLevel === 1000 ? 100 : 1000);
+                let n = Math.floor(Math.random() * (maxNumberLevel - min)) + min; 
+                return { q: `Affiche ${n} sur le boulier`, r: n, s: "Place les billes et clique sur ✔."}; 
+            }},
+            "0": { t: "+/- 10, 100, 1000", type: "normal", gen: () => { 
+                let pasOptions = [10];
+                if (maxNumberLevel >= 1000) pasOptions.push(100);
+                if (maxNumberLevel >= 10000) pasOptions.push(1000);
+                let pas = pasOptions[Math.floor(Math.random() * pasOptions.length)];
+                let min = pas * 2;
+                let n = Math.floor(Math.random() * (maxNumberLevel - min)) + min; 
+                let op = Math.random() > 0.5 ? '+' : '-'; 
+                if (op === '+' && n + pas >= maxNumberLevel) op = '-'; // Empêche le dépassement du max
+                return { q: `${n} ${op} ${pas} =`, r: op === '+' ? n + pas : n - pas, s: "Modifie uniquement le chiffre concerné."}; 
+            }},
+            "10": { t: "+ finissant par 8 ou 9", type: "normal", gen: () => { 
+                let b = (Math.floor(Math.random() * 4) + 1) * 10 + (Math.random() > 0.5 ? 8 : 9); 
+                if (maxNumberLevel === 100 && b > 40) b = 18; 
+                let maxA = maxNumberLevel - b - 1;
+                let a = Math.floor(Math.random() * (maxA - 10)) + 10; 
+                return { q: `${a} + ${b} =`, r: a + b, s: `Ajoute la dizaine sup. puis retire ${10 - (b % 10)}.`}; 
+            }},
+            "20": { t: "- finissant par 8 ou 9", type: "normal", gen: () => { 
+                let b = (Math.floor(Math.random() * 3) + 1) * 10 + (Math.random() > 0.5 ? 8 : 9); 
+                if (maxNumberLevel === 100 && b > 30) b = 18;
+                let a = Math.floor(Math.random() * (maxNumberLevel - b - 10)) + b + 10; 
+                return { q: `${a} - ${b} =`, r: a - b, s: `Retire la dizaine sup. puis ajoute ${10 - (b % 10)}.`}; 
+            }},
+            "30": { t: "Compléments", type: "normal", gen: () => { 
+                let targets = [100];
+                if (maxNumberLevel >= 1000) targets.push(1000);
+                if (maxNumberLevel >= 10000) targets.push(10000);
+                let target = targets[Math.floor(Math.random() * targets.length)];
+                let n = Math.floor(Math.random() * (target - 10)) + 10; 
+                return { q: `${n} + ... = ${target}`, r: target - n, s: `Complète à la dizaine puis à la centaine/millier.`}; 
+            }},
+            "40": { t: "Tables de 6 à 9", type: "normal", gen: () => { 
+                let a = Math.floor(Math.random() * 4) + 6; 
+                let b = Math.floor(Math.random() * 9) + 2; 
+                return { q: `${a} × ${b} =`, r: a * b, s: "Sers-toi de tes tables de multiplication."}; 
+            }},
+            "50": { t: "Doubles et moitiés", type: "normal", gen: () => { 
+                let isDouble = Math.random() > 0.5; 
+                if (isDouble) { 
+                    let maxN = Math.floor(maxNumberLevel / 2) - 1;
+                    let n = Math.floor(Math.random() * (maxN - 10)) + 10; 
+                    return { q: `Double de ${n}`, r: n * 2, s: `C'est ${n} + ${n}.`}; 
+                } else { 
+                    let maxN = Math.floor(maxNumberLevel / 2) - 1;
+                    let n = (Math.floor(Math.random() * (maxN - 5)) + 5) * 2; 
+                    return { q: `Moitié de ${n}`, r: n / 2, s: `Partage en deux parts égales.`}; 
+                } 
+            }},
+            "60": { t: "× 10, 100, 1000", type: "normal", gen: () => { 
+                let mOptions = [10];
+                if (maxNumberLevel >= 1000) mOptions.push(100);
+                if (maxNumberLevel >= 10000) mOptions.push(1000);
+                let m = mOptions[Math.floor(Math.random() * mOptions.length)]; 
+                let maxN = Math.floor(maxNumberLevel / m) - 1;
+                if (maxN < 2) maxN = 2;
+                let n = Math.floor(Math.random() * (maxN - 1)) + 2; 
+                return { q: `${n} × ${m} =`, r: n * m, s: "Ajoute simplement les zéros nécessaires."}; 
+            }},
+            "70": { t: "× finissant par 0", type: "normal", gen: () => { 
+                let n = Math.floor(Math.random() * 8) + 2; 
+                let maxM = Math.floor(maxNumberLevel / n / 10);
+                if (maxM > 9) maxM = 9;
+                if (maxM < 2) maxM = 2;
+                let m = (Math.floor(Math.random() * (maxM - 1)) + 2) * 10; 
+                return { q: `${n} × ${m} =`, r: n * m, s: `Multiplie par ${m / 10} puis ajoute un zéro.`}; 
+            }},
+            "80": { t: "Produit en décomposant", type: "normal", gen: () => { 
+                let a = Math.floor(Math.random() * 5) + 2; 
+                let maxB = Math.floor(maxNumberLevel / a) - 1;
+                if (maxB > 50) maxB = 50; // Limite raisonnable pour le calcul mental CE1
+                if (maxB < 12) maxB = 12;
+                let b = Math.floor(Math.random() * (maxB - 11)) + 12; 
+                let du = Math.floor(b / 10) * 10;
+                let u = b % 10;
+                return { q: `${a} × ${b} =`, r: a * b, s: `Calcule (${a} × ${du}) + (${a} × ${u}).`}; 
+            }}
         };
 
         let currentMode = 'mode-autonomie';
@@ -731,12 +812,23 @@
             players.forEach(p => stopSession(p.id));
         }
 
+        function setRange(val, btnElem) {
+            maxNumberLevel = val;
+            document.querySelectorAll('.range-btn').forEach(btn => btn.classList.remove('active'));
+            if(btnElem) btnElem.classList.add('active');
+            
+            // Relancer la question avec la nouvelle limite si une session est en cours
+            players.forEach(p => {
+                if(p.currentProg && !p.evalFinished) startQuestion(p.id);
+            }); 
+        }
+
         function setTimer(val, btnElem) {
             timerConfig = val;
             document.querySelectorAll('.timer-btn').forEach(btn => btn.classList.remove('active'));
             if(btnElem) btnElem.classList.add('active');
             players.forEach(p => {
-                if(p.currentProg) startQuestion(p.id);
+                if(p.currentProg && !p.evalFinished) startQuestion(p.id);
             }); 
         }
 
