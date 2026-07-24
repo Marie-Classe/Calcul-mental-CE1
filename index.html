@@ -12,10 +12,9 @@
             --card-bg: #f6f7fc;
             --box-bg: #f8efe6;
             --text-main: #1e293b;
-            --mode-auto: #10b981; 
-            --mode-train: #8b5cf6; 
-            --mode-eval: #f97316; 
-            --current-mode: var(--mode-auto);
+            --mode-train: #8b5cf6; /* Violet */
+            --mode-eval: #f97316; /* Orange */
+            --current-mode: var(--mode-train);
             
             /* Couleurs du boulier */
             --bead-top-inactive: #7D1E1F;    
@@ -135,7 +134,6 @@
             position: relative;
         }
 
-        body.mode-autonomie .player-card { border-color: #6ee7b7; }
         body.mode-entrainement .player-card { border-color: #c4b5fd; }
         body.mode-evaluation .player-card { border-color: #fdba74; }
 
@@ -478,15 +476,14 @@
         }
     </style>
 </head>
-<body class="mode-autonomie">
+<body class="mode-entrainement">
 
     <header>
         <h1 class="main-title">Calcul Mental & Boulier - CE1</h1>
         
         <div class="controls-group">
             <div class="segmented">
-                <button class="tool-btn mode-btn active" onclick="setMode('autonomie', 'mode-autonomie', '#10b981')">Autonomie</button>
-                <button class="tool-btn mode-btn" onclick="setMode('entrainement', 'mode-entrainement', '#8b5cf6')">Entraînement</button>
+                <button class="tool-btn mode-btn active" onclick="setMode('entrainement', 'mode-entrainement', '#8b5cf6')">Entraînement</button>
                 <button class="tool-btn mode-btn" onclick="setMode('evaluation', 'mode-evaluation', '#f97316')">Évaluation</button>
             </div>
             
@@ -719,7 +716,7 @@
                 let min = pas * 2;
                 let n = Math.floor(Math.random() * (maxNumberLevel - min)) + min; 
                 let op = Math.random() > 0.5 ? '+' : '-'; 
-                if (op === '+' && n + pas >= maxNumberLevel) op = '-'; // Empêche le dépassement du max
+                if (op === '+' && n + pas >= maxNumberLevel) op = '-'; 
                 return { q: `${n} ${op} ${pas} =`, r: op === '+' ? n + pas : n - pas, s: "Modifie uniquement le chiffre concerné."}; 
             }},
             "10": { t: "+ finissant par 8 ou 9", type: "normal", gen: () => { 
@@ -781,7 +778,7 @@
             "80": { t: "Produit en décomposant", type: "normal", gen: () => { 
                 let a = Math.floor(Math.random() * 5) + 2; 
                 let maxB = Math.floor(maxNumberLevel / a) - 1;
-                if (maxB > 50) maxB = 50; // Limite raisonnable pour le calcul mental CE1
+                if (maxB > 50) maxB = 50; 
                 if (maxB < 12) maxB = 12;
                 let b = Math.floor(Math.random() * (maxB - 11)) + 12; 
                 let du = Math.floor(b / 10) * 10;
@@ -790,7 +787,7 @@
             }}
         };
 
-        let currentMode = 'mode-autonomie';
+        let currentMode = 'mode-entrainement';
         let players = [];
         let timerConfig = 0;
 
@@ -802,13 +799,9 @@
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
-            if (className === 'mode-autonomie') {
-                const infiniteBtn = document.querySelector('.timer-btn[data-val="0"]');
-                if(infiniteBtn) setTimer(0, infiniteBtn);
-            } else {
-                const activeBtn = document.querySelector('.timer-btn.active');
-                timerConfig = activeBtn ? parseInt(activeBtn.dataset.val) : 0;
-            }
+            const activeBtn = document.querySelector('.timer-btn.active');
+            timerConfig = activeBtn ? parseInt(activeBtn.dataset.val) : 0;
+            
             players.forEach(p => stopSession(p.id));
         }
 
@@ -817,7 +810,6 @@
             document.querySelectorAll('.range-btn').forEach(btn => btn.classList.remove('active'));
             if(btnElem) btnElem.classList.add('active');
             
-            // Relancer la question avec la nouvelle limite si une session est en cours
             players.forEach(p => {
                 if(p.currentProg && !p.evalFinished) startQuestion(p.id);
             }); 
@@ -899,7 +891,6 @@
 
         document.addEventListener('keydown', (event) => {
             if(players.length > 0 && players[0].currentProg && !players[0].evalFinished) {
-                // Ignore keyboard typing if the mode requires manipulating the abacus
                 if (players[0].currentQ.type === "write_abacus" && (event.key >= '0' && event.key <= '9')) return;
 
                 if(event.key >= '0' && event.key <= '9') {
@@ -988,17 +979,16 @@
             document.getElementById(`help-box-${id}`).style.display = 'none';
             document.getElementById(`help-box-${id}`).innerHTML = `💡 ${p.currentQ.s}`;
 
-            // Logique Spécifique pour la Dictée Muette (P0) et Inscription (P1)
             if (p.currentQ.type === "read_abacus") {
                 inputField.disabled = false;
                 inputField.value = '';
                 inputField.placeholder = '?';
-                abacusTotal.style.visibility = 'hidden'; // On cache la valeur pour obliger l'élève à lire le boulier
+                abacusTotal.style.visibility = 'hidden'; 
                 injectValueToAbacus(p.currentQ.r); 
             } else if (p.currentQ.type === "write_abacus") {
                 inputField.disabled = true;
                 inputField.value = 'Affiche sur le boulier !';
-                abacusTotal.style.visibility = 'hidden'; // On cache la triche
+                abacusTotal.style.visibility = 'hidden'; 
                 resetAbacusOnly();
             } else {
                 inputField.disabled = false;
@@ -1040,7 +1030,7 @@
             let userVal;
 
             if (p.currentQ.type === "write_abacus") {
-                userVal = getAbacusTotal(); // Validation directement depuis le boulier !
+                userVal = getAbacusTotal(); 
             } else {
                 const input = document.getElementById(`input-${id}`);
                 if(input.value === '' || input.disabled) return;
@@ -1064,10 +1054,9 @@
 
             let fullCorrection = p.currentQ.q;
             
-            // Correction Visuelle spécifique
             if (p.currentQ.type === "write_abacus") {
                 fullCorrection = `Il fallait afficher <br> <span style="color: #2563eb;">${p.currentQ.r}</span>`;
-                injectValueToAbacus(p.currentQ.r); // Affiche la correction sur le boulier
+                injectValueToAbacus(p.currentQ.r); 
                 abacusTotal.style.visibility = 'visible';
             } else if (p.currentQ.type === "read_abacus") {
                 fullCorrection += `<br> <span style="color: #2563eb;">${p.currentQ.r}</span>`;
