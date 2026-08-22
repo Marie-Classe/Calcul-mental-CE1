@@ -12,15 +12,16 @@
             --card-bg: #f6f7fc;
             --box-bg: #f8efe6;
             --text-main: #1e293b;
-            --mode-train: #8b5cf6; /* Violet */
-            --mode-eval: #f97316; /* Orange */
+            --mode-train: #8b5cf6; 
+            --mode-eval: #f97316; 
             --current-mode: var(--mode-train);
             
-            /* Couleurs du boulier */
-            --bead-top-inactive: #7D1E1F;    
+            /* Couleurs du boulier agrandi */
+            --bead-top-inactive: #6b0000;    
             --bead-top-active: #c0392b;     
             --bead-bottom-inactive: #2c3a47;
             --bead-bottom-active: #2557A7;  
+            --frame-color: #2ecc71; /* Couleur du cadre par défaut */
         }
 
         * {
@@ -110,7 +111,7 @@
             align-items: start;
         }
 
-        @media(max-width: 950px) {
+        @media(max-width: 1050px) {
             .container {
                 grid-template-columns: 1fr;
             }
@@ -209,7 +210,6 @@
             gap: 8px;
         }
         .prog-btn:hover { background: var(--current-mode); color: white; }
-        
         .prog-btn b { color: var(--current-mode); }
         .prog-btn:hover b { color: white; }
 
@@ -252,7 +252,6 @@
             align-items: center;
         }
         .help-btn:hover { background: #e2e8f0; }
-
         body.mode-evaluation .help-btn { display: none !important; }
 
         .strategy-box {
@@ -300,7 +299,6 @@
             box-shadow: 0 4px 0 #e2e8f0;
             transition: transform 0.1s, box-shadow 0.1s;
         }
-
         .num-btn:active {
             transform: translateY(4px);
             box-shadow: 0 0 0 #e2e8f0;
@@ -329,7 +327,7 @@
         
         .exercise-container { display: none; }
 
-        /* Colonne Droite : Le Boulier Interactif à 4 Colonnes */
+        /* Colonne Droite : Le Boulier Agrandi (125%) à 4 Colonnes */
         .abacus-card {
             background: var(--card-bg);
             border: 3px dashed #cbd5e1;
@@ -351,63 +349,60 @@
             justify-content: center;
             gap: 8px;
         }
-
-        .abacus-header svg {
-            width: 22px;
-            height: 22px;
-            fill: #475569;
-        }
+        .abacus-header svg { width: 22px; height: 22px; fill: #475569; }
 
         .abacus-frame {
             background-color: #fff;
-            border: 10px solid var(--current-mode); 
-            border-radius: 20px;
+            border: 15px solid var(--current-mode); 
+            border-radius: 25px;
             display: flex;
             justify-content: space-around;
             width: 100%;
-            max-width: 380px;
-            height: 380px;
+            max-width: 460px;
+            height: 525px;
             position: relative;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            padding: 0 10px;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+            padding: 0 12px;
             transition: border-color 0.3s ease;
         }
 
         .beam {
             position: absolute;
-            top: 110px;
+            top: 162px;
             left: 0;
             right: 0;
-            height: 18px;
+            height: 25px;
             background-color: #2c3e50;
             z-index: 10;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
+            padding: 0 5px;
+            gap: 10px;
         }
 
         .beam-btn {
             color: white;
             border: none;
-            height: 18px;
+            height: 25px;
             width: 35px;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
+            background-color: transparent;
             cursor: pointer;
+            border-radius: 4px;
         }
-
-        #reset-abacus-btn {
-            background-color: #c0392b;
-            border-top-left-radius: 2px;
-            border-bottom-left-radius: 2px;
-        }
+        #reset-abacus-btn { background-color: #c0392b; }
+        
+        #cut-button { background-color: #7f8c8d; width: 45px;}
+        #cut-button.active { background-color: #f1c40f; color: #2c3e50; }
 
         .column {
             position: relative;
-            width: 65px;
+            width: 88px;
             height: 100%;
         }
 
@@ -415,21 +410,21 @@
             position: absolute;
             top: 0;
             bottom: 0;
-            left: 29px;
-            width: 6px;
+            left: 41px;
+            width: 7.5px;
             background: linear-gradient(90deg, #bbb, #eee, #bbb);
             z-index: 1;
         }
 
         .bead {
-            width: 55px;
-            height: 26px;
-            border-radius: 15px / 10px;
+            width: 75px;
+            height: 35px;
+            border-radius: 18px / 12px;
             position: absolute;
-            left: 5px;
+            left: 6.5px;
             z-index: 5;
-            transition: top 0.15s ease, background-color 0.15s ease;
-            box-shadow: 0 3px 3px rgba(0,0,0,0.25), inset 0 2px 4px rgba(255,255,255,0.3);
+            transition: top 0.25s ease, background-color 0.25s ease;
+            box-shadow: 0 4px 4px rgba(0,0,0,0.25), inset 0 2px 5px rgba(255,255,255,0.3);
             cursor: pointer;
         }
 
@@ -443,14 +438,15 @@
             display: flex;
             justify-content: space-around;
             width: 100%;
-            max-width: 380px;
+            max-width: 460px;
+            margin-top: 5px;
         }
 
         .abacus-label-item {
-            width: 65px;
+            width: 88px;
             text-align: center;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.5rem;
         }
 
         .abacus-display {
@@ -458,16 +454,17 @@
             border: 2px solid #cbd5e1;
             border-radius: 10px;
             padding: 6px 15px;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             font-weight: bold;
             color: #2c3e50;
             width: 100%;
-            max-width: 380px;
+            max-width: 460px;
             text-align: center;
+            margin-top: 10px;
         }
 
         /* Harmonisation sur ordinateur */
-        @media(min-width: 951px) {
+        @media(min-width: 1051px) {
             .container { align-items: stretch; }
             .player-card, .abacus-card {
                 height: 100%;
@@ -509,7 +506,7 @@
         <!-- COLONNE GAUCHE : Application de Calcul Mental -->
         <div class="workspace" id="app-workspace"></div>
 
-        <!-- COLONNE DROITE : Le Boulier Actif à 4 colonnes (M, C, D, U) -->
+        <!-- COLONNE DROITE : Le Boulier Agrandi (125%) à 4 colonnes (M, C, D, U) -->
         <div class="abacus-card">
             <div class="abacus-header">
                 <svg viewBox="0 0 24 24">
@@ -521,55 +518,56 @@
             <div class="abacus-frame" id="abacus-main-frame">
                 <div class="beam">
                     <button class="beam-btn" id="reset-abacus-btn" onclick="resetAbacusOnly()" title="Remettre à zéro">✕</button>
+                    <button class="beam-btn" id="cut-button" onclick="toggleCutMode()" title="Mode Décomposition">✂️</button>
                     <div style="flex:1;"></div>
                 </div>
                 
                 <!-- Milliers (M) -->
                 <div class="column" id="col-3">
                     <div class="rod"></div>
-                    <div class="bead top" data-idx="0" style="top: 5px;" onclick="clickTopBead('col-3', 0)"></div>
-                    <div class="bead top" data-idx="1" style="top: 35px;" onclick="clickTopBead('col-3', 1)"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-3', 0)" style="top: 175px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-3', 1)" style="top: 205px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-3', 2)" style="top: 235px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-3', 3)" style="top: 265px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-3', 4)" style="top: 295px;"></div>
+                    <div class="bead top" data-idx="0" style="top: 6px;" onclick="clickTopBead('col-3', 0)"></div>
+                    <div class="bead top" data-idx="1" style="top: 48px;" onclick="clickTopBead('col-3', 1)"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 0)" style="top: 250px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 1)" style="top: 291px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 2)" style="top: 332px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 3)" style="top: 373px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-3', 4)" style="top: 414px;"></div>
                 </div>
 
                 <!-- Centaines (C) -->
                 <div class="column" id="col-2">
                     <div class="rod"></div>
-                    <div class="bead top" data-idx="0" style="top: 5px;" onclick="clickTopBead('col-2', 0)"></div>
-                    <div class="bead top" data-idx="1" style="top: 35px;" onclick="clickTopBead('col-2', 1)"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-2', 0)" style="top: 175px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-2', 1)" style="top: 205px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-2', 2)" style="top: 235px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-2', 3)" style="top: 265px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-2', 4)" style="top: 295px;"></div>
+                    <div class="bead top" data-idx="0" style="top: 6px;" onclick="clickTopBead('col-2', 0)"></div>
+                    <div class="bead top" data-idx="1" style="top: 48px;" onclick="clickTopBead('col-2', 1)"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 0)" style="top: 250px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 1)" style="top: 291px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 2)" style="top: 332px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 3)" style="top: 373px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-2', 4)" style="top: 414px;"></div>
                 </div>
 
                 <!-- Dizaines (D) -->
                 <div class="column" id="col-1">
                     <div class="rod"></div>
-                    <div class="bead top" data-idx="0" style="top: 5px;" onclick="clickTopBead('col-1', 0)"></div>
-                    <div class="bead top" data-idx="1" style="top: 35px;" onclick="clickTopBead('col-1', 1)"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-1', 0)" style="top: 175px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-1', 1)" style="top: 205px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-1', 2)" style="top: 235px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-1', 3)" style="top: 265px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-1', 4)" style="top: 295px;"></div>
+                    <div class="bead top" data-idx="0" style="top: 6px;" onclick="clickTopBead('col-1', 0)"></div>
+                    <div class="bead top" data-idx="1" style="top: 48px;" onclick="clickTopBead('col-1', 1)"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 0)" style="top: 250px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 1)" style="top: 291px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 2)" style="top: 332px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 3)" style="top: 373px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-1', 4)" style="top: 414px;"></div>
                 </div>
 
                 <!-- Unités (U) -->
                 <div class="column" id="col-0">
                     <div class="rod"></div>
-                    <div class="bead top" data-idx="0" style="top: 5px;" onclick="clickTopBead('col-0', 0)"></div>
-                    <div class="bead top" data-idx="1" style="top: 35px;" onclick="clickTopBead('col-0', 1)"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-0', 0)" style="top: 175px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-0', 1)" style="top: 205px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-0', 2)" style="top: 235px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-0', 3)" style="top: 265px;"></div>
-                    <div class="bead bottom" onclick="clickBottomBead('col-0', 4)" style="top: 295px;"></div>
+                    <div class="bead top" data-idx="0" style="top: 6px;" onclick="clickTopBead('col-0', 0)"></div>
+                    <div class="bead top" data-idx="1" style="top: 48px;" onclick="clickTopBead('col-0', 1)"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 0)" style="top: 250px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 1)" style="top: 291px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 2)" style="top: 332px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 3)" style="top: 373px;"></div>
+                    <div class="bead bottom" onclick="clickBottomBead('col-0', 4)" style="top: 414px;"></div>
                 </div>
             </div>
 
@@ -585,11 +583,11 @@
     </div>
 
     <script>
-        // --- LOGIQUE DU BOULIER (4 COLONNES) ---
-        const POS_TOP_DOWN = [85, 52];  
-        const POS_TOP_UP = [5, 35];      
-        const POS_BOTTOM_UP = [135, 165, 195, 225, 255];    
-        const POS_BOTTOM_DOWN = [175, 205, 235, 265, 295];  
+        // --- LOGIQUE DU BOULIER AGRANDI (125%) ET DECOMPOSITION ---
+        const POS_TOP_DOWN = [80, 122];  
+        const POS_TOP_UP = [6, 48];      
+        const POS_BOTTOM_UP = [194, 235, 276, 317, 358];    
+        const POS_BOTTOM_DOWN = [250, 291, 332, 373, 414];  
 
         const abacusColumns = [
             { id: "col-0", multiplier: 1, top0: false, top1: false, bottomCount: 0 },
@@ -598,30 +596,11 @@
             { id: "col-3", multiplier: 1000, top0: false, top1: false, bottomCount: 0 }
         ];
 
-        function clickTopBead(colId, idx) {
-            const colState = abacusColumns.find(c => c.id === colId);
-            if (!colState) return;
+        let isCutMode = false;
 
-            if (idx === 0) {
-                if (!colState.top0) { colState.top0 = true; colState.top1 = true; }
-                else { colState.top0 = false; colState.top1 = false; }
-            } else {
-                if (colState.top1) { colState.top1 = false; colState.top0 = false; }
-                else { colState.top1 = true; }
-            }
-            refreshAbacusVisuals(document.getElementById(colId), colState);
-            updateAbacusTotalDisplay();
-        }
-
-        function clickBottomBead(colId, index) {
-            const colState = abacusColumns.find(c => c.id === colId);
-            if (!colState) return;
-
-            if (index >= colState.bottomCount) { colState.bottomCount = index + 1; }
-            else { colState.bottomCount = index; }
-
-            refreshAbacusVisuals(document.getElementById(colId), colState);
-            updateAbacusTotalDisplay();
+        function toggleCutMode() {
+            isCutMode = !isCutMode;
+            document.getElementById('cut-button').classList.toggle('active', isCutMode);
         }
 
         function refreshAbacusVisuals(colEl, state) {
@@ -629,10 +608,10 @@
             const topBeads = Array.from(colEl.querySelectorAll('.bead.top'));
             const bottomBeads = Array.from(colEl.querySelectorAll('.bead.bottom'));
 
-            topBeads[0].style.top = (state.top0 ? POS_TOP_DOWN[1] : POS_TOP_UP[0]) + 'px';
+            topBeads[0].style.top = (state.top0 ? POS_TOP_DOWN[0] : POS_TOP_UP[0]) + 'px';
             if (state.top0) topBeads[0].classList.add('active'); else topBeads[0].classList.remove('active');
 
-            topBeads[1].style.top = (state.top1 ? POS_TOP_DOWN[0] : POS_TOP_UP[1]) + 'px';
+            topBeads[1].style.top = (state.top1 ? POS_TOP_DOWN[1] : POS_TOP_UP[1]) + 'px';
             if (state.top1) topBeads[1].classList.add('active'); else topBeads[1].classList.remove('active');
 
             bottomBeads.forEach((bead, index) => {
@@ -640,6 +619,92 @@
                 bead.style.top = (isActive ? POS_BOTTOM_UP[index] : POS_BOTTOM_DOWN[index]) + 'px';
                 if (isActive) bead.classList.add('active'); else bead.classList.remove('active');
             });
+        }
+
+        function updateAllColumns() {
+            abacusColumns.forEach(col => {
+                refreshAbacusVisuals(document.getElementById(col.id), col);
+            });
+            updateAbacusTotalDisplay();
+        }
+
+        // Animation cascade automatique (5 unités -> 1 quinaire, etc.)
+        function checkCascades() {
+            let changed = false;
+            for (let i = 0; i < abacusColumns.length; i++) {
+                let col = abacusColumns[i];
+                if (col.bottomCount >= 5) {
+                    col.bottomCount -= 5;
+                    if (!col.top1) col.top1 = true;
+                    else if (!col.top0) col.top0 = true;
+                    changed = true;
+                }
+                if (col.top0 && col.top1) {
+                    col.top0 = false;
+                    col.top1 = false;
+                    if (i + 1 < abacusColumns.length) {
+                        abacusColumns[i + 1].bottomCount += 1;
+                    }
+                    changed = true;
+                }
+            }
+            if (changed) {
+                updateAllColumns();
+                setTimeout(checkCascades, 300);
+            }
+        }
+
+        function clickBottomBead(colId, index) {
+            const colState = abacusColumns.find(c => c.id === colId);
+            const colIndex = abacusColumns.findIndex(c => c.id === colId);
+            if (!colState) return;
+
+            if (isCutMode) {
+                // Si on coupe 1 bille en bas (ex: 1 dizaine devient 10 unités)
+                if (index === 0 && colState.bottomCount > 0 && colIndex > 0) {
+                    colState.bottomCount -= 1;
+                    let rightCol = abacusColumns[colIndex - 1];
+                    rightCol.top0 = true;
+                    rightCol.top1 = true;
+                    toggleCutMode();
+                    updateAllColumns();
+                    return;
+                }
+            } else {
+                if (index >= colState.bottomCount) { colState.bottomCount = index + 1; }
+                else { colState.bottomCount = index; }
+            }
+
+            updateAllColumns();
+            setTimeout(checkCascades, 150);
+        }
+
+        function clickTopBead(colId, idx) {
+            const colState = abacusColumns.find(c => c.id === colId);
+            if (!colState) return;
+
+            if (isCutMode) {
+                // Si on coupe 1 bille en haut (ex: 5 devient 5 unités simples)
+                if (colState.top1 || colState.top0) {
+                    if (colState.top0) colState.top0 = false;
+                    else if (colState.top1) colState.top1 = false;
+                    colState.bottomCount += 5;
+                    toggleCutMode();
+                    updateAllColumns();
+                    return;
+                }
+            } else {
+                if (idx === 0) {
+                    if (!colState.top0) { colState.top0 = true; colState.top1 = true; }
+                    else { colState.top0 = false; colState.top1 = false; }
+                } else {
+                    if (colState.top1) { colState.top1 = false; colState.top0 = false; }
+                    else { colState.top1 = true; }
+                }
+            }
+
+            updateAllColumns();
+            setTimeout(checkCascades, 150);
         }
 
         function getAbacusTotal() {
@@ -657,6 +722,7 @@
         }
 
         function resetAbacusOnly() {
+            if (isCutMode) toggleCutMode();
             abacusColumns.forEach(col => {
                 col.top0 = false;
                 col.top1 = false;
