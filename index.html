@@ -229,6 +229,16 @@
             border: 1px solid rgba(0,0,0,0.05);
         }
 
+        /* Nombre agrandi, pour qu'on le lise de loin au tableau */
+        .answer-number {
+            display: inline-block;
+            font-size: 1.9em;
+            font-weight: 900;
+            letter-spacing: 0;
+            margin: 2px 6px;
+            vertical-align: middle;
+        }
+
         .help-container {
             text-align: center;
             min-height: 35px;
@@ -309,7 +319,7 @@
 
         /* Zone de retour : elle reste affichée pendant la question suivante */
         .feedback-area {
-            min-height: 64px; 
+            min-height: 86px; 
             padding: 8px;
             border-radius: 12px;
             font-size: 0.95rem;
@@ -574,6 +584,9 @@
         // sur la tige de gauche) se font tout seuls. En manuel, l'élève les fait lui-même.
         let autoMode = true;
         let isCutMode = false;
+        // Verrouille le boulier pendant l'affichage d'une correction, pour que le nombre
+        // montré à la classe ne bouge pas tant qu'on n'est pas passé à la question suivante.
+        let abacusInteractionLocked = false;
 
         function buildAbacus() {
             const frame = document.getElementById('abacus-main-frame');
@@ -711,6 +724,7 @@
         }
 
         function clickBottomBead(colId, index, beadEl) {
+            if (abacusInteractionLocked) { shake(beadEl); return; }
             const colIndex = abacusColumns.findIndex(c => c.id === colId);
             if (colIndex < 0) return;
             const col = abacusColumns[colIndex];
@@ -735,6 +749,7 @@
         }
 
         function clickTopBead(colId, idx, beadEl) {
+            if (abacusInteractionLocked) { shake(beadEl); return; }
             const col = abacusColumns.find(c => c.id === colId);
             if (!col) return;
 
@@ -820,7 +835,7 @@
             "P1": { t: "Inscrire un nombre (Agir)", type: "write_abacus", gen: () => { 
                 let min = maxNumberLevel === 100 ? 10 : (maxNumberLevel === 1000 ? 100 : 1000);
                 let n = Math.floor(Math.random() * (maxNumberLevel - min)) + min; 
-                return { q: `Affiche ${n} sur le boulier`, r: n, s: "Place les billes et clique sur ✔."}; 
+                return { q: `Affiche <span class="answer-number">${n}</span> sur le boulier`, r: n, s: "Place les billes et appuie sur Entrée (ou ✔)."}; 
             }},
             "0": { t: "+/- 10, 100, 1000", type: "normal", gen: () => { 
                 let pasOptions = [10];
@@ -905,6 +920,12 @@
         let players = [];
         let timerConfig = 0;
 
+        // Identifiant d'une question, pour éviter de proposer deux fois le même nombre / calcul d'affilée.
+        function questionKey(q) {
+            if (q.type === 'write_abacus' || q.type === 'read_abacus') return `${q.type}:${q.r}`;
+            return `${q.type}:${q.q}`;
+        }
+
         function setMode(mode, className, color) {
             document.body.className = className;
             currentMode = className;
@@ -946,7 +967,7 @@
             let studentOptions = '<option value="">Qui es-tu ?</option>';
             studentsList.forEach(s => studentOptions += `<option value="${s}">${s}</option>`);
 
-            players.push({ id: 1, timer: null, currentQ: null, currentProg: null, score: 0, qCount: 0, evalFinished: false });
+            players.push({ id: 1, timer: null, currentQ: null, currentProg: null, score: 0, qCount: 0, evalFinished: false, awaitingNext: false, pendingEnd: false, lastQKey: null });
             
             let gridHTML = '';
             for(let key in progressionData) {
@@ -1024,10 +1045,14 @@
         }
 
         function typeNum(id, num) {
+            const p = players.find(x => x.id === id);
+            if (p && p.awaitingNext) return; // la correction est affichée, Entrée passe à la suite
             const input = document.getElementById(`input-${id}`);
             if(input.value.length < 5 && !input.disabled) input.value += num;
         }
         function delNum(id) {
+            const p = players.find(x => x.id === id);
+            if (p && p.awaitingNext) return;
             const input = document.getElementById(`input-${id}`);
             if(!input.disabled) input.value = input.value.slice(0, -1);
         }
@@ -1055,6 +1080,8 @@
         function stopSession(id) {
             const p = players.find(x => x.id === id);
             clearInterval(p.timer);
+            p.awaitingNext = false; p.pendingEnd = false; p.lastQKey = null;
+            abacusInteractionLocked = false;
             document.getElementById(`exercise-container-${id}`).style.display = 'none';
             document.getElementById(`prog-grid-${id}`).style.display = 'grid';
             document.getElementById(`btn-choose-${id}`).innerText = "Choisir une notion CE1";
@@ -1065,6 +1092,7 @@
         function resetSession(id) {
             const p = players.find(x => x.id === id);
             p.score = 0; p.qCount = 0; p.evalFinished = false;
+            p.awaitingNext = false; p.pendingEnd = false; p.lastQKey = null;
             document.getElementById(`btn-val-${id}`).disabled = false;
             startQuestion(id);
         }
@@ -1083,14 +1111,25 @@
         function startQuestion(id, keepFeedback = false) {
             const p = players.find(x => x.id === id);
             if(!p.currentProg || p.evalFinished) return;
-            
-            p.currentQ = progressionData[p.currentProg].gen();
-            p.currentQ.type = progressionData[p.currentProg].type;
+
+            // On évite de retomber tout de suite sur le même nombre / calcul.
+            let newQ, attempts = 0;
+            do {
+                newQ = progressionData[p.currentProg].gen();
+                newQ.type = progressionData[p.currentProg].type;
+                attempts++;
+            } while (p.lastQKey && questionKey(newQ) === p.lastQKey && attempts < 30);
+            p.currentQ = newQ;
+            p.lastQKey = questionKey(newQ);
+
+            p.awaitingNext = false;
+            p.pendingEnd = false;
+            abacusInteractionLocked = false;
 
             const inputField = document.getElementById(`input-${id}`);
             const abacusTotal = document.getElementById('abacus-total-display');
 
-            document.getElementById(`display-${id}`).innerText = p.currentQ.q;
+            document.getElementById(`display-${id}`).innerHTML = p.currentQ.q;
             if (!keepFeedback) {
                 document.getElementById(`feedback-${id}`).className = 'feedback-area';
                 document.getElementById(`feedback-${id}`).innerHTML = '';
@@ -1142,16 +1181,32 @@
                 badge.innerText = `${timeLeft}s`;
                 if(timeLeft <= 0) {
                     clearInterval(p.timer);
-                    processAnswer(id, null);
+                    // Pour "Inscrire un nombre", on lit ce qui est réellement affiché sur le boulier,
+                    // même si le temps est écoulé avant d'avoir appuyé sur Entrée.
+                    const val = (p.currentQ && p.currentQ.type === 'write_abacus') ? getAbacusTotal() : null;
+                    revealAnswer(id, val);
                 }
             }, 1000);
         }
 
+        // 1er appui sur Entrée (ou ✔) : valide et affiche la correction, sans enchaîner.
+        // 2e appui : passe à la question suivante (ou termine l'évaluation après la 10e).
         function validate(id) {
             const p = players.find(x => x.id === id);
-            if (!p || !p.currentQ || p.evalFinished) return;
-            let userVal;
+            if (!p || !p.currentProg || p.evalFinished) return;
 
+            if (p.awaitingNext) {
+                p.awaitingNext = false;
+                if (p.pendingEnd) {
+                    p.pendingEnd = false;
+                    endEvaluation(id);
+                } else {
+                    startQuestion(id, true);
+                }
+                return;
+            }
+
+            let userVal;
             if (p.currentQ.type === "write_abacus") {
                 userVal = getAbacusTotal(); 
                 // Boulier vide : on ne valide pas (évite une validation par erreur, par ex. double appui)
@@ -1162,30 +1217,33 @@
                 userVal = parseInt(input.value);
             }
             
-            processAnswer(id, userVal);
+            revealAnswer(id, userVal);
         }
 
-        function processAnswer(id, userVal) {
+        function revealAnswer(id, userVal) {
             const p = players.find(x => x.id === id);
-            if(!p.currentQ || p.evalFinished) return;
+            if(!p.currentQ || p.evalFinished || p.awaitingNext) return;
             
             clearInterval(p.timer);
             const q = p.currentQ;
             const feedback = document.getElementById(`feedback-${id}`);
-            const blue = v => `<span style="color: #2563eb;">${v}</span>`;
+            const big = v => `<span class="answer-number" style="color: #2563eb;">${v}</span>`;
 
             // Correction de la question qui vient d'être traitée
             let correction;
             if (q.type === "write_abacus") {
-                correction = `Il fallait afficher ${blue(q.r)}`;
+                // On lit aussi ce que l'élève a réellement placé sur le boulier.
+                correction = (userVal === q.r)
+                    ? `Tu as affiché ${big(userVal)}`
+                    : `Tu as affiché ${userVal} — il fallait ${big(q.r)}`;
             } else if (q.type === "read_abacus") {
-                correction = `C'était ${blue(q.r)}`;
+                correction = `C'était ${big(q.r)}`;
             } else if (q.q.includes('...')) {
-                correction = q.q.replace('...', blue(q.r));
+                correction = q.q.replace('...', big(q.r));
             } else if (q.q.endsWith('=')) {
-                correction = `${q.q} ${blue(q.r)}`;
+                correction = `${q.q} ${big(q.r)}`;
             } else {
-                correction = `${q.q} ➔ ${blue(q.r)}`;
+                correction = `${q.q} ➔ ${big(q.r)}`;
             }
 
             if(userVal === q.r) {
@@ -1198,22 +1256,28 @@
                 feedback.innerHTML = `${verdict}<br>${correction}`;
             }
 
+            // Pour toutes les notions, on affiche (ou on confirme) le bon nombre sur le boulier,
+            // bien visible pour toute la classe, et on verrouille les billes le temps de la correction.
+            injectValueToAbacus(q.r);
+            document.getElementById('abacus-total-display').style.visibility = 'visible';
+            abacusInteractionLocked = true;
+
             if (currentMode === 'mode-evaluation') {
                 p.qCount++;
                 if (p.qCount >= 10) {
-                    p.evalFinished = true;
-                    document.getElementById(`btn-val-${id}`).disabled = true;
-                    endEvaluation(id);
-                    return;
+                    p.pendingEnd = true;
                 }
             }
 
-            // Enchaînement immédiat, sans temps d'attente
-            startQuestion(id, true);
+            // On attend un second appui sur Entrée (ou ✔) avant d'enchaîner.
+            p.awaitingNext = true;
         }
 
         function endEvaluation(id) {
             const p = players.find(x => x.id === id);
+            p.evalFinished = true;
+            document.getElementById(`btn-val-${id}`).disabled = true;
+
             const student = document.getElementById(`student-${id}`).value;
             const feedback = document.getElementById(`feedback-${id}`);
             
