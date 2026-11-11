@@ -518,6 +518,78 @@
         button.tool-btn.icon-btn { padding: 4px 10px; display: inline-flex; align-items: center; justify-content: center; }
         .color-btn { font-size: 1.15rem; }
         .ico-target { background: #f97316; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
+
+        /* ===== Ergonomie : grand énoncé + ✔ dans le cadre beige, clavier agrandi, tout dans la fenêtre ===== */
+        .player-header { min-height: 0; }
+        .player-card { padding: 12px 16px; gap: 8px; }
+        .exercise-box {
+            background: var(--box-bg);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+        }
+        .exercise-box .exercise-display {
+            flex: 1;
+            background: transparent;
+            border: none;
+            font-size: min(11vw, 8vh, 5.4rem);
+            min-height: 14vh;
+            padding: 4px 0;
+        }
+        .btn-val-big {
+            flex: 0 0 auto;
+            width: min(20vw, 12vh, 120px);
+            height: min(20vw, 12vh, 120px);
+            border-radius: 18px;
+            background: #10b981;
+            color: white;
+            border: 2px solid #059669;
+            box-shadow: 0 5px 0 #059669;
+            font-size: min(8vw, 6vh, 4rem);
+            font-weight: 900;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .btn-val-big:active { transform: translateY(5px); box-shadow: 0 0 0 #059669; }
+        .btn-val-big:disabled { opacity: 0.5; }
+        .help-container { min-height: 0; margin: 0; }
+        .strategy-box { font-size: 1.1rem; }
+        input.answer-input { font-size: min(9vw, 5.4vh, 4rem); font-weight: 700; line-height: 1.05; padding: 0.6vh 10px; margin-bottom: 0; }
+        .numpad { gap: min(10px, 1vh); }
+        .num-btn { font-size: min(8vw, 4.7vh, 3.6rem); font-weight: 700; line-height: 1.05; padding: min(3vw, 0.6vh) 0; border-radius: 12px; }
+        .btn-del { font-size: min(6vw, 3.4vh, 2.6rem); }
+        .btn-zero { grid-column: span 2; }
+        .feedback-area { font-size: min(1.3rem, 2.6vh); min-height: 8vh; padding: 4px; }
+        .progress-indicator { margin: 4px 0 0; font-size: 1rem; }
+        .abacus-label-item { font-size: min(1.9rem, 4vw); font-weight: 700; line-height: 1.1; }
+        .abacus-display { font-size: min(2.4rem, 7vw); font-weight: 700; padding: 2px 15px; line-height: 1.15; }
+
+        /* Indice : simple logo à côté du choix de notion */
+        .choose-row { display: flex; gap: 8px; align-items: stretch; }
+        .choose-row .btn-choose-prog { flex: 1; }
+        .choose-row .help-btn { display: none; font-size: 1.5rem; padding: 4px 12px; background: #fef08a; border-color: #fde047; }
+        .player-card:has(#exercise-container-1[style*="block"]) .choose-row .help-btn { display: inline-flex; }
+        /* Correction dans la bande beige (verte si juste, rouge si faux) */
+        .exercise-box.ok { background: #d1fae5; border-color: #34d399; }
+        .exercise-box.ko { background: #fee2e2; border-color: #f87171; }
+        .exercise-box.ok .answer-number { color: #047857 !important; }
+        .exercise-box.ko .answer-number { color: #b91c1c !important; }
+        .band-verdict { font-size: 0.34em; font-weight: 700; letter-spacing: 0; line-height: 1.2; }
+        .exercise-box.ok .band-verdict { color: #065f46; }
+        .exercise-box.ko .band-verdict { color: #991b1b; }
+        .band-correction { line-height: 1.1; }
+        .feedback-area:empty { display: none; }
+        .exercise-box .exercise-display { min-height: 16vh; font-size: min(11vw, 8.5vh, 5.4rem); }
+
+        /* Écritures blanches des barres violettes et du menu principal, plus grandes */
+        .btn-choose-prog { font-size: min(1.6rem, 4.2vw); padding: 12px; }
+        .prog-btn { font-size: min(1.25rem, 3.8vw); padding: 12px 10px; }
+        .prog-btn b { min-width: 34px; }
+        .prog-grid { max-height: 62vh; }
+        .op-toggle-btn { font-size: min(1.3rem, 4vw); padding: 8px 14px; }
     </style>
 </head>
 <body class="mode-entrainement">
@@ -1017,22 +1089,24 @@
                     </select>
                 </div>
 
-                <button id="btn-choose-1" class="btn-choose-prog" onclick="toggleProgGrid(1)">Choisir une notion CE1</button>
+                <div class="choose-row">
+                    <button id="btn-choose-1" class="btn-choose-prog" onclick="toggleProgGrid(1)">Choisir une notion CE1</button>
+                    <button id="btn-help-1" class="help-btn" onclick="showHelp(1)" title="Indice" aria-label="Indice">💡</button>
+                </div>
                 
                 <div id="prog-grid-1" class="prog-grid">${gridHTML}</div>
 
                 <div id="exercise-container-1" class="exercise-container">
-                    <div id="progress-1" class="progress-indicator">Bonnes réponses : 0</div>
-                    
-                    <div id="display-1" class="exercise-display">...</div>
-                    
+                    <div class="exercise-box">
+                        <div id="display-1" class="exercise-display">...</div>
+                        <button class="btn-val-big" id="btn-val-1" onclick="validate(1)" title="Valider (Entrée)">✔</button>
+                    </div>
                     <div class="help-container">
-                        <button id="btn-help-1" class="help-btn" onclick="showHelp(1)">💡 Indice</button>
                         <div id="help-box-1" class="strategy-box"></div>
                     </div>
-                    
+
                     <input type="text" id="input-1" class="answer-input" readonly placeholder="?">
-                    
+
                     <div class="numpad" id="numpad-1">
                         <button class="num-btn" onclick="typeNum(1, 1)">1</button>
                         <button class="num-btn" onclick="typeNum(1, 2)">2</button>
@@ -1044,12 +1118,12 @@
                         <button class="num-btn" onclick="typeNum(1, 8)">8</button>
                         <button class="num-btn" onclick="typeNum(1, 9)">9</button>
                         <button class="num-btn btn-del" onclick="delNum(1)">✖</button>
-                        <button class="num-btn" onclick="typeNum(1, 0)">0</button>
-                        <button class="num-btn btn-val" id="btn-val-1" onclick="validate(1)">✔</button>
+                        <button class="num-btn btn-zero" onclick="typeNum(1, 0)">0</button>
                     </div>
+
+                    <div id="feedback-1" class="feedback-area"></div>
+                    <div id="progress-1" class="progress-indicator">Bonnes réponses : 0</div>
                 </div>
-                
-                <div id="feedback-1" class="feedback-area"></div>
             `;
             ws.appendChild(card);
         }
@@ -1064,14 +1138,17 @@
                 } else if(event.key === 'Backspace') {
                     delNum(1);
                 } else if(event.key === 'Enter') {
+                    // Sans preventDefault, si un bouton a le focus (✔, touche du clavier...),
+                    // Entrée le « clique » en plus : la correction passait aussitôt à la question suivante.
+                    event.preventDefault();
                     validate(1);
                 }
             }
         });
 
         function showHelp(id) {
-            document.getElementById(`help-box-${id}`).style.display = 'inline-block';
-            document.getElementById(`btn-help-${id}`).style.display = 'none';
+            const box = document.getElementById(`help-box-${id}`);
+            box.style.display = box.style.display === 'inline-block' ? 'none' : 'inline-block';
         }
 
         function typeNum(id, num) {
@@ -1160,12 +1237,12 @@
             const abacusTotal = document.getElementById('abacus-total-display');
 
             document.getElementById(`display-${id}`).innerHTML = p.currentQ.q;
+            document.getElementById(`display-${id}`).closest('.exercise-box').classList.remove('ok', 'ko');
             if (!keepFeedback) {
                 document.getElementById(`feedback-${id}`).className = 'feedback-area';
                 document.getElementById(`feedback-${id}`).innerHTML = '';
             }
 
-            document.getElementById(`btn-help-${id}`).style.display = 'inline-flex';
             document.getElementById(`help-box-${id}`).style.display = 'none';
             document.getElementById(`help-box-${id}`).innerHTML = `💡 ${p.currentQ.s}`;
 
@@ -1214,13 +1291,30 @@
                     // Pour "Inscrire un nombre", on lit ce qui est réellement affiché sur le boulier,
                     // même si le temps est écoulé avant d'avoir appuyé sur Entrée.
                     const val = (p.currentQ && p.currentQ.type === 'write_abacus') ? getAbacusTotal() : null;
-                    revealAnswer(id, val);
+                    revealAnswer(id, val === 0 ? null : val, 'timeout');
                 }
             }, 1000);
         }
 
         // 1er appui sur Entrée (ou ✔) : valide et affiche la correction, sans enchaîner.
         // 2e appui : passe à la question suivante (ou termine l'évaluation après la 10e).
+        // Réponse courante : le clavier d'abord, puis le boulier (il compte comme une réponse,
+        // sauf en « Dictée muette » où il affiche la question). Rien de saisi : null.
+        function readCurrentAnswer(id) {
+            const p = players.find(x => x.id === id);
+            if (!p || !p.currentQ) return null;
+            if (p.currentQ.type !== 'write_abacus') {
+                const input = document.getElementById(`input-${id}`);
+                if (input && input.value !== '' && !input.disabled) return parseInt(input.value);
+            }
+            if (p.currentQ.type !== 'read_abacus') {
+                const abacusVal = getAbacusTotal();
+                if (abacusVal !== 0) return abacusVal;
+            }
+            return null;
+        }
+
+        // Entrée / ✔ sans rien saisir ni poser sur le boulier : la correction s'affiche quand même.
         function validate(id) {
             const p = players.find(x => x.id === id);
             if (!p || !p.currentProg || p.evalFinished) return;
@@ -1236,21 +1330,20 @@
                 return;
             }
 
-            let userVal;
-            if (p.currentQ.type === "write_abacus") {
-                userVal = getAbacusTotal(); 
-                // Boulier vide : on ne valide pas (évite une validation par erreur, par ex. double appui)
-                if (userVal === 0) return;
-            } else {
-                const input = document.getElementById(`input-${id}`);
-                if(input.value === '' || input.disabled) return;
-                userVal = parseInt(input.value);
-            }
-            
-            revealAnswer(id, userVal);
+            revealAnswer(id, readCurrentAnswer(id), 'manual');
         }
 
-        function revealAnswer(id, userVal) {
+        // La correction s'affiche dans la bande beige : verdict + calcul complet,
+        // vert si juste, rouge si faux.
+        function showBand(id, ok, verdict, correction) {
+            const disp = document.getElementById(`display-${id}`);
+            disp.innerHTML = `<div class="band-verdict">${verdict}</div><div class="band-correction">${correction}</div>`;
+            const box = disp.closest('.exercise-box');
+            box.classList.remove('ok', 'ko');
+            box.classList.add(ok ? 'ok' : 'ko');
+        }
+
+        function revealAnswer(id, userVal, reason) {
             const p = players.find(x => x.id === id);
             if(!p.currentQ || p.evalFinished || p.awaitingNext) return;
             
@@ -1263,7 +1356,8 @@
             let correction;
             if (q.type === "write_abacus") {
                 // On lit aussi ce que l'élève a réellement placé sur le boulier.
-                correction = (userVal === q.r)
+                correction = (userVal === null) ? `Il fallait afficher ${big(q.r)}`
+                    : (userVal === q.r)
                     ? `Tu as affiché ${big(userVal)}`
                     : `Tu as affiché ${userVal} — il fallait ${big(q.r)}`;
             } else if (q.type === "read_abacus") {
@@ -1278,12 +1372,10 @@
 
             if(userVal === q.r) {
                 p.score++;
-                feedback.className = 'feedback-area correct';
-                feedback.innerHTML = `✅ Exact !<br>${correction}`;
+                showBand(id, true, '✅ Exact !', correction);
             } else {
-                feedback.className = 'feedback-area incorrect';
-                const verdict = (userVal === null) ? '❌ Temps écoulé !' : '❌ Faux !';
-                feedback.innerHTML = `${verdict}<br>${correction}`;
+                const verdict = (userVal === null) ? ((reason === 'timeout') ? '❌ Temps écoulé !' : '❌ Pas de réponse !') : '❌ Faux !';
+                showBand(id, false, verdict, correction);
             }
 
             // Pour toutes les notions, on affiche (ou on confirme) le bon nombre sur le boulier,
