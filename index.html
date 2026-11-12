@@ -53,7 +53,7 @@
             gap: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             border-bottom: 4px solid var(--current-mode);
-            position: sticky;
+            position: relative;
             top: 0;
             z-index: 100;
         }
@@ -371,7 +371,7 @@
             display: flex;
             width: 100%;
             max-width: 660px;
-            height: 525px;
+            height: 485px; /* 6px sous les billes du bas, comme au-dessus des billes du haut */
             position: relative;
             box-shadow: 0 12px 25px rgba(0,0,0,0.15);
             padding: 0 12px;
@@ -580,7 +580,8 @@
         .band-verdict { font-size: 0.34em; font-weight: 700; letter-spacing: 0; line-height: 1.2; }
         .exercise-box.ok .band-verdict { color: #065f46; }
         .exercise-box.ko .band-verdict { color: #991b1b; }
-        .band-correction { line-height: 1.1; }
+        .band-correction { line-height: 1.1; display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 0 0.25em; }
+        .band-correction .answer-number { vertical-align: baseline; margin: 0; }
         .feedback-area:empty { display: none; }
         .exercise-box .exercise-display { min-height: 16vh; font-size: min(11vw, 8.5vh, 5.4rem); }
 
@@ -590,6 +591,49 @@
         .prog-btn b { min-width: 34px; }
         .prog-grid { max-height: 62vh; }
         .op-toggle-btn { font-size: min(1.3rem, 4vw); padding: 8px 14px; }
+
+        /* Téléphone : boulier réduit (l'ordinateur garde sa taille) */
+        @media (max-width: 700px) {
+            .abacus-frame, .abacus-labels { zoom: 0.72; }
+        }
+
+        .btn-check-key { display: none; background: #10b981; color: #fff; border-color: #059669; box-shadow: 0 3px 0 #059669; }
+
+        /* ===== Téléphone : tout voir d'un coup (✔ sur le clavier, textes inutiles retirés) ===== */
+        @media (max-width: 700px) {
+            .abacus-header { display: none; }
+            .btn-val-big { display: none; }
+            .btn-check-key { display: flex; align-items: center; justify-content: center; }
+            .btn-zero { grid-column: span 1; }
+            .exercise-box { padding: 4px 8px; }
+            .exercise-box .exercise-display { min-height: 76px; font-size: min(10.5vw, 3.1rem); padding: 0; }
+            .band-verdict { font-size: 0.36em; }
+            input.answer-input { font-size: 1.7rem; padding: 2px 8px; }
+            .numpad { gap: 4px; }
+            .num-btn { font-size: 1.8rem; padding: 6px 0; border-radius: 10px; }
+            .btn-del { font-size: 1.4rem; }
+            .btn-choose-prog { font-size: 1.05rem; padding: 7px 10px; }
+            .op-toggle-btn { font-size: 1rem; padding: 5px 10px; }
+            .ops-wrap .help-btn, .choose-row .help-btn { font-size: 1.2rem; padding: 2px 8px; }
+            .ops-wrap .ops-toggle-container.visible { padding-right: 50px; }
+            .player-card { padding: 8px; gap: 6px; }
+            .progress-indicator { font-size: 0.8rem; margin: 0; }
+            .feedback-area { min-height: 0; }
+            .abacus-frame, .abacus-labels { zoom: 0.58; }
+            .abacus-display { font-size: 1.5rem; padding: 0 10px; }
+            .abacus-label-item { font-size: 1.6rem; }
+            .abacus-card { padding: 8px; gap: 2px; }
+            .abacus-frame, .abacus-labels { zoom: 0.54; }
+            .abacus-labels { margin-top: 0; }
+            .abacus-display { margin-top: 2px; font-size: 1.3rem; }
+            .container { gap: 6px !important; padding: 6px !important; }
+            .exercise-box .exercise-display { min-height: 62px; font-size: min(10vw, 2.8rem); }
+            .num-btn { padding: 3px 0; font-size: 1.7rem; }
+            .btn-choose-prog { padding: 5px 8px; }
+            body.mode-entrainement .progress-indicator { display: none; }
+            body.mode-evaluation .progress-indicator { display: block; }
+            .player-card { gap: 4px; }
+        }
     </style>
 </head>
 <body class="mode-entrainement">
@@ -1119,6 +1163,7 @@
                         <button class="num-btn" onclick="typeNum(1, 9)">9</button>
                         <button class="num-btn btn-del" onclick="delNum(1)">✖</button>
                         <button class="num-btn btn-zero" onclick="typeNum(1, 0)">0</button>
+                        <button class="num-btn btn-check-key" onclick="validate(1)" title="Valider" aria-label="Valider">✔</button>
                     </div>
 
                     <div id="feedback-1" class="feedback-area"></div>
@@ -1354,14 +1399,9 @@
 
             // Correction de la question qui vient d'être traitée
             let correction;
-            if (q.type === "write_abacus") {
-                // On lit aussi ce que l'élève a réellement placé sur le boulier.
-                correction = (userVal === null) ? `Il fallait afficher ${big(q.r)}`
-                    : (userVal === q.r)
-                    ? `Tu as affiché ${big(userVal)}`
-                    : `Tu as affiché ${userVal} — il fallait ${big(q.r)}`;
-            } else if (q.type === "read_abacus") {
-                correction = `C'était ${big(q.r)}`;
+            if (q.type === "write_abacus" || q.type === "read_abacus") {
+                // Juste le nombre, sans phrase : c'est lui qu'on veut voir.
+                correction = big(q.r);
             } else if (q.q.includes('...')) {
                 correction = q.q.replace('...', big(q.r));
             } else if (q.q.endsWith('=')) {
